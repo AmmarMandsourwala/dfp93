@@ -1,0 +1,51 @@
+[
+  {
+    "id": "apple",
+    "name": "Apple",
+    "temperature_c": 65,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 480
+  },
+  {
+    "id": "banana",
+    "name": "Banana",
+    "temperature_c": 60,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "mango",
+    "name": "Mango",
+    "temperature_c": 57,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 540
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "temperature_c": 58,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 660
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "temperature_c": 56,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 420
+  },
+   {
+    "id": "neem leaves",
+    "name": "neem leaves",
+    "temperature_c": 45,
+    "target_percent_initial": 10,
+    "moist_init": 0.65,
+    "moist_final": 0.10,
+    "estimated_minutes": 420
+  }
+]

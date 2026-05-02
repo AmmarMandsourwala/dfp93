@@ -1,0 +1,311 @@
+#define BLYNK_TEMPLATE_ID "TMPL3MuoyBjph"
+#define BLYNK_TEMPLATE_NAME "Food Drier"
+#define BLYNK_AUTH_TOKEN "qxfoOhdJ7Gh02hWGrN1ceZdAYDqWx-mL"
+
+#define BLYNK_PRINT Serial
+#include <BlynkSimpleEsp8266.h>
+
+char auth[] = "qxfoOhdJ7Gh02hWGrN1ceZdAYDqWx-mL";
+
+#include <Wire.h>
+#include "HX711.h"
+#include <EEPROM.h>
+#include <ESP8266WiFi.h>
+
+// ================= FIREBASE =================
+#include <Firebase_ESP_Client.h>
+
+#define FIREBASE_HOST "https://food-dryer-dab22-default-rtdb.asia-southeast1.firebasedatabase.app/"  // <-- Replace
+#define FIREBASE_SECRET "MBU8l4t114ysjAytcWqhuNv6A4Iub7c86utPwXaW"                                  // <-- Replace
+
+FirebaseData fbdo;
+FirebaseConfig fbConfig;
+FirebaseAuth fbAuth;
+
+bool firebaseReady = false;
+unsigned long lastFirebaseSend = 0;
+#define FIREBASE_SEND_INTERVAL 2000  // Send every 2 seconds
+
+unsigned long lastFirebaseRead = 0;
+#define FIREBASE_READ_INTERVAL 3000  // Read every 3 seconds
+
+// ================= WIFI =================
+const char* ssid = "Galaxy M34 5G 55D7";
+const char* password = "1234567890";
+
+// ================= HX711 =================
+#define DOUT  D2
+#define CLK   D1
+HX711 scale;
+
+// ================= RELAY =================
+#define RELAY_PIN D5
+
+// ================= CALIBRATION =================
+float known_weight = 250.0;
+float calibration_factor;
+
+// ================= PROCESS VARIABLES =================
+float threshold = 50.0;
+bool processActive = false; // Tracks the boolean from Firebase
+
+// ================= EEPROM =================
+#define EEPROM_SIZE 512
+#define CAL_ADDR 0
+#define THRESHOLD_ADDR 20
+
+// ================= RELAY STATE =================
+bool relayState = false;
+
+//=============================================================================================
+// SAVE / LOAD CALIBRATION
+//=============================================================================================
+void saveCalibration(float value) {
+  EEPROM.put(CAL_ADDR, value);
+  EEPROM.commit();
+}
+
+float loadCalibration() {
+  float value;
+  EEPROM.get(CAL_ADDR, value);
+  if (isnan(value) || value == 0) return -1;
+  return value;
+}
+
+//=============================================================================================
+// SAVE / LOAD THRESHOLD
+//=============================================================================================
+void saveThreshold(float value) {
+  EEPROM.put(THRESHOLD_ADDR, value);
+  EEPROM.commit();
+  Serial.println("Threshold saved");
+}
+
+float loadThreshold() {
+  float value;
+  EEPROM.get(THRESHOLD_ADDR, value);
+  if (isnan(value) || value <= 0) return 50.0;
+  return value;
+}
+
+//=============================================================================================
+// BLYNK: RECEIVE THRESHOLD FROM V2
+//=============================================================================================
+BLYNK_WRITE(V2) {
+  float newThreshold = param.asFloat();
+  if (newThreshold != threshold) {
+    threshold = newThreshold;
+    saveThreshold(threshold);
+    Serial.print("New Threshold (Blynk): ");
+    Serial.println(threshold);
+
+    if (firebaseReady) {
+      Firebase.RTDB.setFloat(&fbdo, "/foodDrier/targetWeight", threshold);
+    }
+  }
+}
+
+//=============================================================================================
+// FIREBASE READ CONTROL FUNCTION (NEW)
+//=============================================================================================
+void readFirebaseControls() {
+  if (!firebaseReady) return;
+
+  unsigned long now = millis();
+  if (now - lastFirebaseRead < FIREBASE_READ_INTERVAL) return;
+  lastFirebaseRead = now;
+
+  // 1. Read Boolean to check if process should be running
+  if (Firebase.RTDB.getBool(&fbdo, "/foodDrier/isActive")) {
+    processActive = fbdo.boolData();
+  }
+
+  // 2. If active, read the target weight
+  if (processActive) {
+    if (Firebase.RTDB.getFloat(&fbdo, "/foodDrier/targetWeight")) {
+      float firebaseTarget = fbdo.floatData();
+      
+      // Update threshold if it has changed
+      if (firebaseTarget != threshold && firebaseTarget > 0) {
+        threshold = firebaseTarget;
+        saveThreshold(threshold);
+        Serial.print("New target weight from Firebase: ");
+        Serial.println(threshold);
+        Blynk.virtualWrite(V2, threshold); // Keep Blynk synced
+      }
+    }
+  }
+}
+
+//=============================================================================================
+// FIREBASE SEND FUNCTION
+//=============================================================================================
+void sendToFirebase(float weight, bool relay) {
+  if (!firebaseReady) return;
+
+  unsigned long now = millis();
+  if (now - lastFirebaseSend < FIREBASE_SEND_INTERVAL) return;
+  lastFirebaseSend = now;
+
+  FirebaseJson json;
+  json.set("weight", weight);
+  json.set("relayState", relay ? "ON" : "OFF");
+  json.set("threshold", threshold);
+  json.set("isActive", processActive);
+  json.set("timestamp/.sv", "timestamp");  // Firebase server timestamp
+
+  if (Firebase.RTDB.setJSON(&fbdo, "/foodDrier/live", &json)) {
+    Serial.println("Firebase: Data sent OK");
+  } else {
+    Serial.print("Firebase Error: ");
+    Serial.println(fbdo.errorReason());
+  }
+
+  // Push to history log
+  Firebase.RTDB.pushJSON(&fbdo, "/foodDrier/history", &json);
+}
+
+//=============================================================================================
+// CALIBRATION FUNCTION
+//=============================================================================================
+void calibrate() {
+  Serial.println("\n=== CALIBRATION START ===");
+
+  Serial.println("Remove all weight...");
+  Blynk.virtualWrite(V1, "Remove all weight");
+  delay(3000);
+
+  scale.tare();
+  Serial.println("Tare done");
+  Blynk.virtualWrite(V1, "Tare done");
+
+  Serial.print("Place ");
+  Serial.print(known_weight);
+  Serial.println(" g weight...");
+  Blynk.virtualWrite(V1, "Place 250g Weight");
+
+  delay(5000);
+
+  long reading = scale.get_units(10);
+  calibration_factor = reading / known_weight;
+  scale.set_scale(calibration_factor);
+  saveCalibration(calibration_factor);
+
+  Serial.print("Calibration Factor: ");
+  Serial.println(calibration_factor);
+  Serial.println("=== CALIBRATION DONE ===\n");
+  Blynk.virtualWrite(V1, "done");
+}
+
+//=============================================================================================
+// SETUP
+//=============================================================================================
+void setup() {
+  Serial.begin(9600);
+
+  // Connect WiFi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi Connected: " + WiFi.localIP().toString());
+
+  // Start Blynk
+  Blynk.config(auth);
+  Blynk.connect();
+
+  // Firebase setup using legacy secret
+  fbConfig.database_url = FIREBASE_HOST;
+  fbConfig.signer.tokens.legacy_token = FIREBASE_SECRET;
+
+  Firebase.begin(&fbConfig, &fbAuth);
+  Firebase.reconnectWiFi(true);
+
+  firebaseReady = true;
+  Serial.println("Firebase initialized");
+
+  // Scale setup
+  scale.begin(DOUT, CLK);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
+  EEPROM.begin(EEPROM_SIZE);
+
+  // Load calibration
+  calibration_factor = loadCalibration();
+  if (calibration_factor == -1) {
+    Serial.println("No valid calibration found!");
+    calibrate();
+  } else {
+    Serial.println("Calibration loaded: " + String(calibration_factor));
+    scale.set_scale(calibration_factor);
+    delay(2000);
+    scale.tare();
+  }
+
+  // Load threshold
+  threshold = loadThreshold();
+  Serial.print("Loaded Threshold: ");
+  Serial.println(threshold);
+
+  Serial.println("System Ready\n");
+}
+
+//=============================================================================================
+// LOOP
+//=============================================================================================
+void loop() {
+  Blynk.run();
+
+  // Serial recalibration trigger
+  if (Serial.available()) {
+    char cmd = Serial.read();
+    if (cmd == 'c' || cmd == 'C') calibrate();
+  }
+
+  // Check Firebase for Control Updates
+  readFirebaseControls();
+
+  // Read weight
+  float weight = abs(scale.get_units(5));
+  Serial.print("Weight: ");
+  Serial.print(weight, 2);
+  Serial.println(" g");
+
+  Blynk.virtualWrite(V0, weight);
+
+  // ================= NEW RELAY LOGIC =================
+  if (processActive) {
+    // During drying, food loses weight. As long as current weight > target, keep SSR ON.
+    if (weight > threshold) {
+      digitalWrite(RELAY_PIN, HIGH);
+      relayState = true;
+      Serial.println("Status: ACTIVE - SSR ON");
+      Blynk.virtualWrite(V1, 1);
+    } else {
+      // Target weight reached!
+      digitalWrite(RELAY_PIN, LOW);
+      relayState = false;
+      Serial.println("Status: TARGET REACHED - SSR OFF");
+      Blynk.virtualWrite(V1, 0);
+
+      // Automatically reset Firebase boolean so it doesn't immediately restart
+      if (Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false)) {
+        processActive = false;
+        Serial.println("Firebase updated: isActive set to false");
+      }
+    }
+  } else {
+    // System is on standby
+    digitalWrite(RELAY_PIN, LOW);
+    relayState = false;
+    Blynk.virtualWrite(V1, 0);
+  }
+  // ====================================================
+
+  // Send to Firebase
+  sendToFirebase(weight, relayState);
+
+  delay(200);
+}

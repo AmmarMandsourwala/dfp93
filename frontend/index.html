@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fruit Dryer Control</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Firebase Weight Monitor</p>
+        <h1>Fruit Dryer Control</h1>
+      </div>
+      <div class="status" id="connectionStatus">Connecting</div>
+    </header>
+
+    <main>
+      <section class="control-panel">
+        <form id="batchForm" class="batch-form">
+          <label for="fruitSelect">Fruit</label>
+          <select id="fruitSelect" name="fruit_id" required></select>
+
+          <div class="profile-grid" id="profileDetails">
+            <span>Select a fruit profile.</span>
+          </div>
+
+          <div class="button-row">
+            <button type="submit">Start Drying</button>
+            <button type="button" class="secondary" id="enableSoundButton">Enable Sound</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat">
+          <span>Current weight</span>
+          <strong id="weightValue">-- g</strong>
+        </article>
+        <article class="stat">
+          <span>Target weight</span>
+          <strong id="targetValue">-- g</strong>
+        </article>
+        <article class="stat">
+          <span>Time elapsed</span>
+          <strong id="elapsedValue">--</strong>
+        </article>
+      </section>
+
+      <section class="batch-summary">
+        <div>
+          <p class="eyebrow">Active Batch</p>
+          <h2 id="batchTitle">No batch running</h2>
+        </div>
+        <div class="target-list">
+          <span id="initialWeight">Initial: -- g</span>
+          <span id="elapsedTime">Elapsed: --</span>
+          <span id="sourceValue">Live source: Firebase</span>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <div class="chart-header">
+          <div>
+            <p class="eyebrow">Firebase Graph</p>
+            <h2>Live weight and target</h2>
+          </div>
+          <span class="status">Live from Firebase</span>
+        </div>
+        <canvas id="telemetryChart" width="1200" height="420"></canvas>
+        <div class="legend">
+          <span><i class="weight"></i>Weight</span>
+          <span><i class="target"></i>Target</span>
+        </div>
+      </section>
+
+      <section class="notice" id="notice" hidden></section>
+    </main>
+
+    <div class="completion-modal" id="completionModal" aria-hidden="true">
+      <div class="modal-body">
+        <p class="eyebrow">Drying Complete</p>
+        <h2 id="completionTitle">Target reached</h2>
+        <p id="completionText">The fruit has reached the selected target weight.</p>
+        <button type="button" id="dismissModal">OK</button>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
