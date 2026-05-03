@@ -684,13 +684,13 @@ async function init() {
   renderFruitOptions();
   renderState(await fetch("/api/state").then((response) => response.json()));
 
-  const events = new EventSource("/api/events");
-  events.addEventListener("state", (event) => {
-    renderState(JSON.parse(event.data));
-  });
-  events.onerror = () => {
-    connectionStatus.textContent = "Firebase connection lost";
-  };
+  window.setInterval(async () => {
+    try {
+      renderState(await fetch("/api/state").then((response) => response.json()));
+    } catch (error) {
+      connectionStatus.textContent = "Firebase connection lost";
+    }
+  }, 2000);
 }
 
 fruitSelect.addEventListener("change", renderProfile);

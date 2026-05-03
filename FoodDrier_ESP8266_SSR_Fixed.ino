@@ -307,7 +307,7 @@ void loop() {
 
   float weight = abs(scale.get_units(5));
   bool averageReady = updateWeightAverage(weight);
-  float controlWeight = hasAveragedWeight ? averagedWeight : weight;
+  bool targetReachedByAverage = hasAveragedWeight && averagedWeight <= threshold;
 
   Serial.print("Raw Weight: ");
   Serial.print(weight, 2);
@@ -321,7 +321,7 @@ void loop() {
     Blynk.virtualWrite(V0, averagedWeight);
   }
 
-  if (processActive && controlWeight > threshold) {
+  if (processActive && !targetReachedByAverage) {
     setRelay(true);
     Serial.println("Status: ACTIVE - SSR ON");
     Blynk.virtualWrite(V1, 1);
@@ -329,9 +329,11 @@ void loop() {
     setRelay(false);
     Blynk.virtualWrite(V1, 0);
 
-    if (processActive && controlWeight <= threshold) {
+    if (processActive && targetReachedByAverage) {
       Serial.println("Status: TARGET REACHED - SSR OFF");
-      if (Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false)) {
+      bool activeCleared = Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false);
+      Firebase.RTDB.setBool(&fbdo, "/foodDrier/ssr", false);
+      if (activeCleared) {
         processActive = false;
         Serial.println("Firebase updated: isActive set to false");
       }
