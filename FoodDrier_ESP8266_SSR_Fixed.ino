@@ -23,7 +23,8 @@ FirebaseAuth fbAuth;
 
 bool firebaseReady = false;
 unsigned long lastFirebaseSend = 0;
-const unsigned long FIREBASE_SEND_INTERVAL = 90000;
+const unsigned long FIREBASE_STANDBY_SEND_INTERVAL = 1000;
+const unsigned long FIREBASE_ACTIVE_SEND_INTERVAL = 120000;
 
 unsigned long lastFirebaseRead = 0;
 const unsigned long FIREBASE_READ_INTERVAL = 3000;
@@ -58,7 +59,8 @@ bool processActive = false;
 bool relayState = false;
 
 // ================= WEIGHT AVERAGING =================
-const unsigned long WEIGHT_AVERAGE_WINDOW = 90000;
+const unsigned long WEIGHT_AVERAGE_WINDOW = 120000;
+const float MIN_VALID_WEIGHT = 5.0;
 unsigned long weightAverageStart = 0;
 double weightSum = 0;
 unsigned int weightSampleCount = 0;
@@ -108,17 +110,24 @@ bool updateWeightAverage(float weight) {
     weightAverageStart = now;
   }
 
-  weightSum += weight;
-  weightSampleCount++;
+  if (weight >= MIN_VALID_WEIGHT) {
+    weightSum += weight;
+    weightSampleCount++;
+  }
 
   if (now - weightAverageStart < WEIGHT_AVERAGE_WINDOW) {
     return false;
   }
 
-  averagedWeight = weightSampleCount > 0 ? weightSum / weightSampleCount : weight;
+  weightAverageStart = now;
+  if (weightSampleCount == 0) {
+    weightSum = 0;
+    return false;
+  }
+
+  averagedWeight = weightSum / weightSampleCount;
   hasAveragedWeight = true;
 
-  weightAverageStart = now;
   weightSum = 0;
   weightSampleCount = 0;
 
@@ -190,7 +199,8 @@ void sendToFirebase(float weight, bool relay) {
   if (!firebaseReady) return;
 
   unsigned long now = millis();
-  if (now - lastFirebaseSend < FIREBASE_SEND_INTERVAL) return;
+  unsigned long sendInterval = processActive ? FIREBASE_ACTIVE_SEND_INTERVAL : FIREBASE_STANDBY_SEND_INTERVAL;
+  if (now - lastFirebaseSend < sendInterval) return;
   lastFirebaseSend = now;
 
   FirebaseJson json;
@@ -342,8 +352,10 @@ void loop() {
     }
   }
 
-  if (averageReady) {
+  if (processActive && averageReady) {
     sendToFirebase(averagedWeight, relayState);
+  } else if (!processActive) {
+    sendToFirebase(weight, relayState);
   }
   delay(200);
 }
