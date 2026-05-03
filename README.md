@@ -38,9 +38,10 @@ The app reads current weight from the configured `FIREBASE_WEIGHT_URL`. When `St
 ```text
 /foodDrier/targetWeight
 /foodDrier/isActive
+/foodDrier/ssr
 ```
 
-The SSR should stay off until `/foodDrier/isActive` becomes `true`. It is set back to `false` when the target weight is reached.
+The SSR should stay off until `/foodDrier/isActive` or `/foodDrier/ssr` becomes `true`. Both booleans are set back to `false` when the target weight is reached or Stop Drying is clicked.
 
 To use a custom Firebase path:
 

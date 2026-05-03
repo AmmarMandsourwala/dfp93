@@ -1,6 +1,8 @@
 const fruitSelect = document.querySelector("#fruitSelect");
 const profileDetails = document.querySelector("#profileDetails");
 const batchForm = document.querySelector("#batchForm");
+const startDryingButton = document.querySelector("#startDryingButton");
+const stopDryingButton = document.querySelector("#stopDryingButton");
 const enableSoundButton = document.querySelector("#enableSoundButton");
 const connectionStatus = document.querySelector("#connectionStatus");
 const notice = document.querySelector("#notice");
@@ -103,11 +105,11 @@ function renderProfile() {
   const fruit = selectedFruit();
   if (!fruit) {
     profileDetails.innerHTML = "<span>Select a fruit profile.</span>";
-    batchForm.querySelector("button[type='submit']").disabled = true;
+    startDryingButton.disabled = true;
     return;
   }
 
-  batchForm.querySelector("button[type='submit']").disabled = false;
+  startDryingButton.disabled = Boolean(state?.batch?.running);
   profileDetails.innerHTML = `
     <span>Final Moisture: ${targetProfileText(fruit)}</span>
     <span>Current profile: ${fruit.name}</span>
@@ -182,6 +184,23 @@ async function startDrying(payload) {
   }
 }
 
+async function stopDrying() {
+  stopDryingButton.disabled = true;
+  stopDryingButton.setAttribute("aria-busy", "true");
+  setNotice("Stopping dryer...");
+  try {
+    const nextState = await postJson("/api/batch/stop");
+    state = nextState;
+    renderState(nextState);
+    setNotice("Drying stopped.");
+  } catch (error) {
+    setNotice(`Stop failed: ${error.message}`);
+  } finally {
+    stopDryingButton.disabled = false;
+    stopDryingButton.removeAttribute("aria-busy");
+  }
+}
+
 function setNotice(message, isVisible = true) {
   notice.hidden = !isVisible;
   notice.textContent = message;
@@ -215,7 +234,7 @@ function getElapsedDisplay() {
     return formatDuration(baseSeconds + elapsedSinceManualStart);
   }
 
-  return formatElapsed(batch.started_at, batch.completed_at);
+  return formatElapsed(batch.started_at, batch.completed_at || batch.stopped_at);
 }
 
 function renderElapsedFields() {
@@ -269,6 +288,7 @@ function renderState(nextState) {
   const batch = state.batch || {};
   const connected = latest.connected !== false;
   const hasStartedBatch = Boolean(batch.started_at);
+  const isRunningBatch = Boolean(batch.running);
 
   if (!hasStartedBatch) {
     thresholdAlertShown = false;
@@ -282,6 +302,12 @@ function renderState(nextState) {
   const currentWeight = state.use_manual_weight ? 
     absoluteWeight(state.manual_weight_g, 1) : 
     absoluteWeight(latest.weight_g, 2);
+  const graphWeightPoint = [...(state.history || [])]
+    .reverse()
+    .find((item) => Number.isFinite(Number(item.weight_g)));
+  const displayWeight = hasStartedBatch && graphWeightPoint
+    ? absoluteWeight(graphWeightPoint.weight_g, 2)
+    : currentWeight;
 
   // Always show Firebase connected for fooling purposes
   connectionStatus.style.display = "block";
@@ -292,7 +318,7 @@ function renderState(nextState) {
   sourceValue.style.display = "block";
   sourceValue.textContent = "Source: Firebase";
 
-  document.querySelector("#weightValue").textContent = formatNumber(currentWeight, "g", state.use_manual_weight ? 1 : 2);
+  document.querySelector("#weightValue").textContent = formatNumber(displayWeight, "g", state.use_manual_weight ? 1 : 2);
   document.querySelector("#targetValue").textContent = Number.isFinite(Number(batch.target_weight_g))
     ? formatNumber(batch.target_weight_g, "g", 2)
     : "-- g";
@@ -314,14 +340,19 @@ function renderState(nextState) {
     ? `${batch.fruit_name} drying`
     : batch.completed_at
       ? `${batch.fruit_name} target reached`
-      : "No batch running";
+      : batch.stopped_at
+        ? `${batch.fruit_name} stopped`
+        : "No batch running";
   document.querySelector("#initialWeight").textContent = `Initial: ${formatNumber(batch.initial_weight_g, "g", 2)}`;
+  startDryingButton.disabled = !fruitSelect.value || isRunningBatch;
 
   if (thresholdAlertActive) {
     setNotice("Current weight is below 59 g. Remove the tray from the dryer.");
   } else if (hasStartedBatch && batch.completed_at && !completionResetInProgress) {
     setNotice("Target weight reached. Remove the tray from the dryer.");
     showCompletion(batch, currentWeight);
+  } else if (batch.stopped_at) {
+    setNotice("Drying stopped.");
   } else if (batch.stabilization_warning && batch.running) {
     setNotice("Weight stabilized. Please stop the drying process.");
   } else if (latest.error) {
@@ -510,15 +541,31 @@ function pointTimeValue(point, fallbackIndex) {
 }
 
 function xForPoint(point, history, left, right) {
-  if (history.length <= 1) return right;
+  if (history.length <= 1) return left + (right - left) * 0.72;
 
-  const times = history.map(pointTimeValue);
-  const minTime = Math.min(...times);
-  const maxTime = Math.max(...times);
+  const { minTime, maxTime } = paddedTimeBounds(history);
   if (maxTime <= minTime) return right;
 
   const value = pointTimeValue(point, history.indexOf(point));
   return left + ((value - minTime) / (maxTime - minTime)) * (right - left);
+}
+
+function paddedTimeBounds(history) {
+  const times = history.map((point, index) => pointTimeValue(point, index));
+  const minTime = Math.min(...times);
+  const lastTime = Math.max(...times);
+  const sortedTimes = [...new Set(times)].sort((a, b) => a - b);
+  const gaps = sortedTimes
+    .slice(1)
+    .map((timeValue, index) => timeValue - sortedTimes[index])
+    .filter((gap) => Number.isFinite(gap) && gap > 0);
+  const typicalGap = gaps.length ? Math.min(...gaps) : 120;
+  const futurePadding = Math.max(typicalGap, (lastTime - minTime) * 0.25, 120);
+
+  return {
+    minTime,
+    maxTime: lastTime + futurePadding,
+  };
 }
 
 function scaleToPlot(value, min, max, top, bottom) {
@@ -576,7 +623,7 @@ function drawAxes(history, yMin, yMax, width, height, padding) {
   for (let i = 0; i < xTicks; i += 1) {
     const index = Math.round((i / Math.max(xTicks - 1, 1)) * (history.length - 1));
     const item = history[index];
-    const x = history.length === 1 ? (i === 0 ? plotLeft : plotRight) : xForPoint(item, history, plotLeft, plotRight);
+    const x = xForPoint(item, history, plotLeft, plotRight);
     ctx.strokeStyle = "#e8eeec";
     ctx.beginPath();
     ctx.moveTo(x, plotTop);
@@ -700,6 +747,11 @@ enableSoundButton.addEventListener("click", async () => {
   playAlarm();
   enableSoundButton.textContent = "Sound Enabled";
   enableSoundButton.disabled = true;
+});
+
+stopDryingButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  stopDrying();
 });
 
 dismissModal.addEventListener("click", () => {

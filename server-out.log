@@ -1,0 +1,506 @@
+Fruit dryer app running at http://127.0.0.1:8000
+Mobile LAN URL: http://10.245.87.42:8000
+Telemetry mode: firebase at https://food-dryer-dab22-default-rtdb.asia-southeast1.firebasedatabase.app/foodDrier/live.json
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "GET / HTTP/1.1" 200 -
+127.0.0.1 - "GET /app.js?v=stop-drying-fix HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+127.0.0.1 - "GET / HTTP/1.1" 200 -
+127.0.0.1 - "GET /app.js?v=stop-drying-fix HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+127.0.0.1 - code 404, message File not found
+127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+[LIVE]  674.23g | Target:  262.20g | Progress:   0.0% | Remaining: 540.0min | Source: firebase
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /app.js?v=stop-drying-fix HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: False
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]  674.23g | Source: firebase | Connected: True
+[LIVE]   12.20g | Source: firebase | Connected: True
+[LIVE]    1.26g | Source: firebase | Connected: True
+[LIVE]    1.26g | Source: firebase | Connected: True
+[LIVE]    2.47g | Source: firebase | Connected: True
+[LIVE]    4.92g | Source: firebase | Connected: True
+[LIVE]    4.92g | Source: firebase | Connected: True
+[LIVE]    2.65g | Source: firebase | Connected: True
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /app.js?v=stop-drying-fix HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]    2.65g | Source: firebase | Connected: False
+[LIVE]    2.65g | Source: firebase | Connected: False
+[LIVE]  677.05g | Source: firebase | Connected: True
+[LIVE]  670.89g | Source: firebase | Connected: True
+[LIVE]  667.87g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  662.78g | Source: firebase | Connected: True
+[LIVE]  671.33g | Source: firebase | Connected: True
+[LIVE]  671.33g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  666.03g | Target:  261.07g | Progress:   1.3% | Remaining: 592.2min | Source: firebase
+[LIVE]  669.27g | Target:  261.07g | Progress:   0.5% | Remaining: 597.0min | Source: firebase
+[LIVE]  653.52g | Target:  261.07g | Progress:   4.3% | Remaining: 574.0min | Source: firebase
+[LIVE]  653.52g | Target:  261.07g | Progress:   4.3% | Remaining: 574.0min | Source: firebase
+[LIVE]  657.86g | Target:  261.07g | Progress:   3.3% | Remaining: 580.3min | Source: firebase
+[LIVE]  657.62g | Target:  261.07g | Progress:   3.3% | Remaining: 579.9min | Source: firebase
+[LIVE]  657.62g | Target:  261.07g | Progress:   3.3% | Remaining: 579.9min | Source: firebase
+[LIVE]  668.56g | Target:  261.07g | Progress:   0.7% | Remaining: 595.9min | Source: firebase
+[LIVE]  663.76g | Target:  261.07g | Progress:   1.8% | Remaining: 588.9min | Source: firebase
+[LIVE]  667.34g | Target:  261.07g | Progress:   1.0% | Remaining: 594.2min | Source: firebase
+[LIVE]  670.56g | Target:  261.07g | Progress:   0.2% | Remaining: 598.9min | Source: firebase
+[LIVE]  670.56g | Target:  261.07g | Progress:   0.2% | Remaining: 598.9min | Source: firebase
+[LIVE]  656.77g | Target:  261.07g | Progress:   3.5% | Remaining: 578.7min | Source: firebase
+[LIVE]  653.12g | Target:  261.07g | Progress:   4.4% | Remaining: 573.4min | Source: firebase
+[LIVE]  653.12g | Target:  261.07g | Progress:   4.4% | Remaining: 573.4min | Source: firebase
+[LIVE]  659.80g | Target:  261.07g | Progress:   2.8% | Remaining: 583.1min | Source: firebase
+[LIVE]  659.80g | Target:  261.07g | Progress:   2.8% | Remaining: 583.1min | Source: firebase
+[LIVE]  659.80g | Target:  261.07g | Progress:   2.8% | Remaining: 583.1min | Source: firebase
+[LIVE]  661.18g | Target:  261.07g | Progress:   2.5% | Remaining: 585.2min | Source: firebase
+[LIVE]  661.18g | Target:  261.07g | Progress:   2.5% | Remaining: 585.2min | Source: firebase
+[LIVE]  660.72g | Target:  261.07g | Progress:   2.6% | Remaining: 584.5min | Source: firebase
+[LIVE]  660.72g | Target:  261.07g | Progress:   2.6% | Remaining: 584.5min | Source: firebase
+[LIVE]  644.41g | Target:  261.07g | Progress:   6.6% | Remaining: 560.6min | Source: firebase
+[LIVE]  644.41g | Target:  261.07g | Progress:   6.6% | Remaining: 560.6min | Source: firebase
+[LIVE]  647.65g | Target:  261.07g | Progress:   5.8% | Remaining: 565.4min | Source: firebase
+[LIVE]  647.65g | Target:  261.07g | Progress:   5.8% | Remaining: 565.4min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  648.46g | Target:  261.07g | Progress:   5.6% | Remaining: 566.6min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  649.09g | Target:  261.07g | Progress:   5.4% | Remaining: 567.5min | Source: firebase
+[LIVE]  665.64g | Target:  261.07g | Progress:   1.4% | Remaining: 591.7min | Source: firebase
+[LIVE]  651.18g | Target:  261.07g | Progress:   4.9% | Remaining: 570.5min | Source: firebase
+[LIVE]  660.21g | Target:  261.07g | Progress:   2.7% | Remaining: 583.7min | Source: firebase
+[LIVE]  660.21g | Target:  261.07g | Progress:   2.7% | Remaining: 583.7min | Source: firebase
+[LIVE]  647.61g | Target:  261.07g | Progress:   5.8% | Remaining: 565.3min | Source: firebase
+[LIVE]  650.10g | Target:  261.07g | Progress:   5.2% | Remaining: 569.0min | Source: firebase
+[LIVE]  650.10g | Target:  261.07g | Progress:   5.2% | Remaining: 569.0min | Source: firebase
+[LIVE]  645.46g | Target:  261.07g | Progress:   6.3% | Remaining: 562.2min | Source: firebase
+[LIVE]  650.18g | Target:  261.07g | Progress:   5.2% | Remaining: 569.1min | Source: firebase
+[LIVE]  658.87g | Target:  261.07g | Progress:   3.0% | Remaining: 581.8min | Source: firebase
+[LIVE]  661.67g | Target:  261.07g | Progress:   2.4% | Remaining: 585.9min | Source: firebase
+[LIVE]  661.67g | Target:  261.07g | Progress:   2.4% | Remaining: 585.9min | Source: firebase
+[LIVE]  662.32g | Target:  261.07g | Progress:   2.2% | Remaining: 586.8min | Source: firebase
+[LIVE]  655.25g | Target:  261.07g | Progress:   3.9% | Remaining: 576.5min | Source: firebase
+[LIVE]  650.43g | Target:  261.07g | Progress:   5.1% | Remaining: 569.4min | Source: firebase
+[LIVE]  650.43g | Target:  261.07g | Progress:   5.1% | Remaining: 569.4min | Source: firebase
+[LIVE]  672.51g | Target:  261.07g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  661.95g | Target:  261.07g | Progress:   2.3% | Remaining: 586.3min | Source: firebase
+[LIVE]  661.95g | Target:  261.07g | Progress:   2.3% | Remaining: 586.3min | Source: firebase
+[LIVE]  662.50g | Target:  261.07g | Progress:   2.2% | Remaining: 587.1min | Source: firebase
+[LIVE]  664.49g | Target:  261.07g | Progress:   1.7% | Remaining: 590.0min | Source: firebase
+[LIVE]  664.49g | Target:  261.07g | Progress:   1.7% | Remaining: 590.0min | Source: firebase
+[LIVE]  370.34g | Target:  261.07g | Progress:  73.4% | Remaining: 159.8min | Source: firebase
+[LIVE]  396.76g | Target:  261.07g | Progress:  66.9% | Remaining: 198.4min | Source: firebase
+[LIVE]  397.14g | Target:  261.07g | Progress:  66.8% | Remaining: 199.0min | Source: firebase
+[LIVE]  384.16g | Target:  261.07g | Progress:  70.0% | Remaining: 180.0min | Source: firebase
+[LIVE]  384.16g | Target:  261.07g | Progress:  70.0% | Remaining: 180.0min | Source: firebase
+[LIVE]  392.24g | Target:  261.07g | Progress:  68.0% | Remaining: 191.8min | Source: firebase
+[LIVE]  380.67g | Target:  261.07g | Progress:  70.8% | Remaining: 174.9min | Source: firebase
+[LIVE]  383.79g | Target:  261.07g | Progress:  70.1% | Remaining: 179.5min | Source: firebase
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  374.53g | Source: firebase | Connected: True
+[LIVE]  375.55g | Source: firebase | Connected: True
+[LIVE]  392.87g | Source: firebase | Connected: True
+[LIVE]  410.62g | Source: firebase | Connected: True
+[LIVE]  397.93g | Source: firebase | Connected: True
+[LIVE]  397.14g | Source: firebase | Connected: True
+[LIVE]  415.98g | Source: firebase | Connected: True
+[LIVE]  404.90g | Source: firebase | Connected: True
+[LIVE]  410.35g | Source: firebase | Connected: True
+[LIVE]  416.59g | Source: firebase | Connected: True
+[LIVE]  412.42g | Source: firebase | Connected: True
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  412.42g | Source: firebase | Connected: False
+[LIVE]  418.23g | Source: firebase | Connected: True
+[LIVE]  423.97g | Source: firebase | Connected: True
+[LIVE]  400.16g | Source: firebase | Connected: True
+[LIVE]  400.16g | Source: firebase | Connected: True
+[LIVE]  395.30g | Source: firebase | Connected: True
+[LIVE]  414.51g | Source: firebase | Connected: True
+[LIVE]  418.40g | Source: firebase | Connected: True
+[LIVE]  418.40g | Source: firebase | Connected: True
+[LIVE]  408.21g | Source: firebase | Connected: True
+[LIVE]  417.81g | Source: firebase | Connected: True
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+[LIVE]  417.81g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  417.81g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  417.81g | Target:  162.48g | Progress:   0.0% | Remaining: 660.0min | Source: firebase
+[LIVE]  409.76g | Target:  162.48g | Progress:   3.2% | Remaining: 639.2min | Source: firebase
+[LIVE]  391.37g | Target:  162.48g | Progress:  10.4% | Remaining: 591.7min | Source: firebase
+[LIVE]  397.49g | Target:  162.48g | Progress:   8.0% | Remaining: 607.5min | Source: firebase
+[LIVE]  410.47g | Target:  162.48g | Progress:   2.9% | Remaining: 641.0min | Source: firebase
+[LIVE]  396.90g | Target:  162.48g | Progress:   8.2% | Remaining: 605.9min | Source: firebase
+[LIVE]  410.03g | Target:  162.48g | Progress:   3.0% | Remaining: 639.9min | Source: firebase
+[LIVE]  410.03g | Target:  162.48g | Progress:   3.0% | Remaining: 639.9min | Source: firebase
+[LIVE]  410.03g | Target:  162.48g | Progress:   3.0% | Remaining: 639.9min | Source: firebase
+[LIVE]  410.03g | Target:  162.48g | Progress:   3.0% | Remaining: 639.9min | Source: firebase
+[LIVE]  402.21g | Target:  162.48g | Progress:   6.1% | Remaining: 619.7min | Source: firebase
+[LIVE]  388.29g | Target:  162.48g | Progress:  11.6% | Remaining: 583.7min | Source: firebase
+[LIVE]  388.29g | Target:  162.48g | Progress:  11.6% | Remaining: 583.7min | Source: firebase
+[LIVE]  388.74g | Target:  162.48g | Progress:  11.4% | Remaining: 584.9min | Source: firebase
+[LIVE]  389.83g | Target:  162.48g | Progress:  11.0% | Remaining: 587.7min | Source: firebase
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /app.js?v=stop-drying-fix HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  389.83g | Target:  162.48g | Progress:  11.0% | Remaining: 587.7min | Source: firebase
+[LIVE]  394.53g | Target:  162.48g | Progress:   9.1% | Remaining: 599.8min | Source: firebase
+[LIVE]  394.53g | Target:  162.48g | Progress:   9.1% | Remaining: 599.8min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  392.38g | Target:  162.48g | Progress:  10.0% | Remaining: 594.3min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  392.38g | Target:  162.48g | Progress:  10.0% | Remaining: 594.3min | Source: firebase
+[LIVE]  383.81g | Target:  162.48g | Progress:  13.3% | Remaining: 572.1min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  392.81g | Target:  162.48g | Progress:   9.8% | Remaining: 595.4min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  392.34g | Target:  162.48g | Progress:  10.0% | Remaining: 594.2min | Source: firebase
+[LIVE]  395.81g | Target:  162.48g | Progress:   8.6% | Remaining: 603.1min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  388.21g | Target:  162.48g | Progress:  11.6% | Remaining: 583.5min | Source: firebase
+[LIVE]  388.21g | Target:  162.48g | Progress:  11.6% | Remaining: 583.5min | Source: firebase
+[LIVE]  388.21g | Target:  162.48g | Progress:  11.6% | Remaining: 583.5min | Source: firebase
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  388.21g | Target:  162.48g | Progress:  11.6% | Remaining: 583.5min | Source: firebase
+[LIVE]  388.21g | Target:  162.48g | Progress:  11.6% | Remaining: 583.5min | Source: firebase
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  381.14g | Source: firebase | Connected: True
+127.0.0.1 - "GET / HTTP/1.1" 304 -
+127.0.0.1 - "GET /api/fruits HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/state HTTP/1.1" 200 -
+127.0.0.1 - "GET /api/events HTTP/1.1" 200 -
+[LIVE]  396.27g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  400.65g | Source: firebase | Connected: True
+[LIVE]  401.88g | Source: firebase | Connected: True
+[LIVE]  401.88g | Source: firebase | Connected: True
+[LIVE]  401.88g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  407.31g | Target:  124.83g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  407.31g | Target:  124.83g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+[LIVE]  394.21g | Target:  124.83g | Progress:   2.8% | Remaining: 583.4min | Source: firebase
+[LIVE]  404.54g | Target:  124.83g | Progress:   0.0% | Remaining: 600.0min | Source: firebase
+127.0.0.1 - "POST /api/batch/stop HTTP/1.1" 200 -
+[LIVE]  404.54g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/selection HTTP/1.1" 200 -
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 502 -
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 502 -
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 502 -
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  404.54g | Source: firebase | Connected: False
+[LIVE]  414.30g | Source: firebase | Connected: True
+[LIVE]  414.30g | Source: firebase | Connected: True
+[LIVE]  396.07g | Source: firebase | Connected: True
+[LIVE]  400.53g | Source: firebase | Connected: True
+[LIVE]  400.53g | Source: firebase | Connected: True
+127.0.0.1 - "POST /api/batch/start HTTP/1.1" 200 -
+[LIVE]  406.34g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  401.40g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  401.40g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  399.05g | Target:  115.42g | Progress:   0.5% | Remaining: 477.5min | Source: firebase
+[LIVE]  399.05g | Target:  115.42g | Progress:   0.5% | Remaining: 477.5min | Source: firebase
+[LIVE]  406.89g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  406.89g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  402.80g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  394.51g | Target:  115.42g | Progress:   2.1% | Remaining: 469.9min | Source: firebase
+[LIVE]  394.51g | Target:  115.42g | Progress:   2.1% | Remaining: 469.9min | Source: firebase
+[LIVE]  405.73g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  405.73g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  402.86g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  411.00g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  411.00g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  407.62g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  415.34g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase
+[LIVE]  415.34g | Target:  115.42g | Progress:   0.0% | Remaining: 480.0min | Source: firebase

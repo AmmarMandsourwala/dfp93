@@ -23,7 +23,7 @@ FirebaseAuth fbAuth;
 
 bool firebaseReady = false;
 unsigned long lastFirebaseSend = 0;
-const unsigned long FIREBASE_SEND_INTERVAL = 2000;
+const unsigned long FIREBASE_SEND_INTERVAL = 90000;
 
 unsigned long lastFirebaseRead = 0;
 const unsigned long FIREBASE_READ_INTERVAL = 3000;
@@ -56,6 +56,15 @@ float calibration_factor;
 float threshold = 50.0;
 bool processActive = false;
 bool relayState = false;
+
+// ================= WEIGHT AVERAGING =================
+const unsigned long WEIGHT_AVERAGE_WINDOW = 90000;
+unsigned long weightAverageStart = 0;
+double weightSum = 0;
+unsigned int weightSampleCount = 0;
+float averagedWeight = 0;
+bool hasAveragedWeight = false;
+bool lastProcessActive = false;
 
 // ================= EEPROM =================
 #define EEPROM_SIZE 512
@@ -90,6 +99,39 @@ float loadThreshold() {
   EEPROM.get(THRESHOLD_ADDR, value);
   if (isnan(value) || value <= 0) return 50.0;
   return value;
+}
+
+bool updateWeightAverage(float weight) {
+  unsigned long now = millis();
+
+  if (weightAverageStart == 0) {
+    weightAverageStart = now;
+  }
+
+  weightSum += weight;
+  weightSampleCount++;
+
+  if (now - weightAverageStart < WEIGHT_AVERAGE_WINDOW) {
+    return false;
+  }
+
+  averagedWeight = weightSampleCount > 0 ? weightSum / weightSampleCount : weight;
+  hasAveragedWeight = true;
+
+  weightAverageStart = now;
+  weightSum = 0;
+  weightSampleCount = 0;
+
+  return true;
+}
+
+void resetWeightAverage() {
+  weightAverageStart = 0;
+  weightSum = 0;
+  weightSampleCount = 0;
+  averagedWeight = 0;
+  hasAveragedWeight = false;
+  lastFirebaseSend = 0;
 }
 
 BLYNK_WRITE(V2) {
@@ -165,7 +207,9 @@ void sendToFirebase(float weight, bool relay) {
     Serial.println(fbdo.errorReason());
   }
 
-  Firebase.RTDB.pushJSON(&fbdo, "/foodDrier/history", &json);
+  if (processActive) {
+    Firebase.RTDB.pushJSON(&fbdo, "/foodDrier/history", &json);
+  }
 }
 
 void calibrate() {
@@ -255,13 +299,29 @@ void loop() {
 
   readFirebaseControls();
 
-  float weight = abs(scale.get_units(5));
-  Serial.print("Weight: ");
-  Serial.print(weight, 2);
-  Serial.println(" g");
-  Blynk.virtualWrite(V0, weight);
+  if (processActive != lastProcessActive) {
+    resetWeightAverage();
+    lastProcessActive = processActive;
+    Serial.println("Weight averaging reset for process state change");
+  }
 
-  if (processActive && weight > threshold) {
+  float weight = abs(scale.get_units(5));
+  bool averageReady = updateWeightAverage(weight);
+  float controlWeight = hasAveragedWeight ? averagedWeight : weight;
+
+  Serial.print("Raw Weight: ");
+  Serial.print(weight, 2);
+  Serial.print(" g | Samples: ");
+  Serial.println(weightSampleCount);
+
+  if (averageReady) {
+    Serial.print("2-minute Average Weight: ");
+    Serial.print(averagedWeight, 2);
+    Serial.println(" g");
+    Blynk.virtualWrite(V0, averagedWeight);
+  }
+
+  if (processActive && controlWeight > threshold) {
     setRelay(true);
     Serial.println("Status: ACTIVE - SSR ON");
     Blynk.virtualWrite(V1, 1);
@@ -269,7 +329,7 @@ void loop() {
     setRelay(false);
     Blynk.virtualWrite(V1, 0);
 
-    if (processActive && weight <= threshold) {
+    if (processActive && controlWeight <= threshold) {
       Serial.println("Status: TARGET REACHED - SSR OFF");
       if (Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false)) {
         processActive = false;
@@ -280,6 +340,8 @@ void loop() {
     }
   }
 
-  sendToFirebase(weight, relayState);
+  if (averageReady) {
+    sendToFirebase(averagedWeight, relayState);
+  }
   delay(200);
 }

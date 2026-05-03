@@ -28,7 +28,8 @@ FIREBASE_BASE_URL = os.getenv(
 FIREBASE_SECRET = os.getenv("FIREBASE_SECRET", "MBU8l4t114ysjAytcWqhuNv6A4Iub7c86utPwXaW")
 FIREBASE_CONTROL_PATH = os.getenv("FIREBASE_CONTROL_PATH", "foodDrier").strip("/")
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "1.0"))
-alTELEMETRY_SAMPLE_SECONDS = float(os.getenv("TELEMETRY_SAMPLE_SECONDS", "120"))
+TELEMETRY_SAMPLE_SECONDS = float(os.getenv("TELEMETRY_SAMPLE_SECONDS", "120"))
+FIREBASE_WRITE_TIMEOUT_SECONDS = float(os.getenv("FIREBASE_WRITE_TIMEOUT_SECONDS", "10.0"))
 
 
 @dataclass
@@ -42,6 +43,7 @@ class BatchState:
     estimated_minutes: float | None = None
     remaining_minutes: float | None = None
     completed_at: float | None = None
+    stopped_at: float | None = None
     notified: bool = False
     prev_weight_g: float | None = None
     curr_weight_g: float | None = None
@@ -82,6 +84,19 @@ class DryerState:
 
 
 STATE = DryerState()
+
+
+def reset_runtime_state() -> None:
+    STATE.batch = BatchState()
+    STATE.history = []
+    STATE.sample_window_started_at = None
+    STATE.sample_window_weights = []
+    STATE.selected_fruit_id = None
+    STATE.manual_weight_g = None
+    STATE.use_manual_weight = False
+    STATE.manual_elapsed_minutes = None
+    STATE.use_manual_elapsed_time = False
+    STATE.manual_elapsed_started_at = None
 
 
 def load_fruits() -> list[dict[str, Any]]:
@@ -134,17 +149,30 @@ def patch_firebase(path: str, payload: dict[str, Any]) -> None:
         method="PATCH",
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(request, timeout=2.5) as response:
+    with urllib.request.urlopen(request, timeout=FIREBASE_WRITE_TIMEOUT_SECONDS) as response:
         response.read()
 
 
 def write_dryer_controls(is_ready: bool, target_weight_g: float | None = None) -> None:
     payload: dict[str, Any] = {
         "isActive": bool(is_ready),
+        "ssr": bool(is_ready),
     }
     if target_weight_g is not None:
         payload["targetWeight"] = round(float(target_weight_g), 2)
-    patch_firebase(FIREBASE_CONTROL_PATH, payload)
+    elif not is_ready:
+        payload["targetWeight"] = 0
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            patch_firebase(FIREBASE_CONTROL_PATH, payload)
+            return
+        except (OSError, urllib.error.URLError, TimeoutError) as exc:
+            last_error = exc
+            if attempt < 2:
+                time.sleep(0.4 * (attempt + 1))
+    if last_error is not None:
+        raise last_error
 
 
 def calculate_target_weight(
@@ -393,6 +421,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if route == "/api/batch/reset":
             self.reset_batch()
             return
+        if route == "/api/batch/stop":
+            self.stop_batch()
+            return
         if route == "/api/selection":
             self.update_selection()
             return
@@ -502,15 +533,28 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def reset_batch(self) -> None:
         with STATE.lock:
-            STATE.batch = BatchState()
-            STATE.history = []
-            STATE.sample_window_started_at = None
-            STATE.sample_window_weights = []
+            reset_runtime_state()
 
         try:
             write_dryer_controls(False)
         except (OSError, urllib.error.URLError, TimeoutError) as exc:
             print(f"[FIREBASE] Failed to clear dryer controls during batch reset: {exc}")
+
+        json_response(self, STATE.snapshot())
+
+    def stop_batch(self) -> None:
+        try:
+            write_dryer_controls(False)
+        except (OSError, urllib.error.URLError, TimeoutError) as exc:
+            json_response(
+                self,
+                {"error": f"Could not stop dryer controls in Firebase: {exc}"},
+                HTTPStatus.BAD_GATEWAY,
+            )
+            return
+
+        with STATE.lock:
+            reset_runtime_state()
 
         json_response(self, STATE.snapshot())
 

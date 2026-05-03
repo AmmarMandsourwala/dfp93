@@ -1,51 +1,82 @@
 [
   {
-    "id": "apple",
-    "name": "Apple",
-    "temperature_c": 65,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 480
-  },
-  {
-    "id": "banana",
-    "name": "Banana",
-    "temperature_c": 60,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 600
-  },
-  {
     "id": "mango",
     "name": "Mango",
     "temperature_c": 57,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 540
+    "moist_init": 0.87,
+    "moist_final": 0.16,
+    "estimated_minutes": 900
+  },
+  {
+    "id": "banana_slices",
+    "name": "Banana Slices",
+    "temperature_c": 57,
+    "moist_init": 0.7335,
+    "moist_final": 0.0752,
+    "estimated_minutes": 480
+  },
+  {
+    "id": "banana_figs",
+    "name": "Banana Figs",
+    "temperature_c": 55,
+    "moist_init": 0.7335,
+    "moist_final": 0.142,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "figs",
+    "name": "Figs",
+    "temperature_c": 54,
+    "moist_init": 0.795,
+    "moist_final": 0.2544,
+    "estimated_minutes": 720
   },
   {
     "id": "pineapple",
     "name": "Pineapple",
-    "temperature_c": 58,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 660
+    "temperature_c": 57,
+    "moist_init": 0.85,
+    "moist_final": 0.15,
+    "estimated_minutes": 600
   },
   {
-    "id": "strawberry",
-    "name": "Strawberry",
-    "temperature_c": 56,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 420
-  },
-   {
-    "id": "neem leaves",
-    "name": "neem leaves",
+    "id": "moringa_leaves",
+    "name": "Moringa Leaves",
     "temperature_c": 45,
-    "target_percent_initial": 10,
-    "moist_init": 0.65,
-    "moist_final": 0.10,
-    "estimated_minutes": 420
+    "moist_init": 0.75,
+    "moist_final": 0.075,
+    "estimated_minutes": 360
+  },
+  {
+    "id": "grapes",
+    "name": "Grapes",
+    "temperature_c": 55,
+    "moist_init": 0.75,
+    "moist_final": 0.18,
+    "estimated_minutes": 720
+  },
+  {
+    "id": "green_beans",
+    "name": "Green Beans",
+    "temperature_c": 55,
+    "moist_init": 0.895,
+    "moist_final": 0.15,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "carrot",
+    "name": "Carrot",
+    "temperature_c": 60,
+    "moist_init": 0.809,
+    "moist_final": 0.06,
+    "estimated_minutes": 480
+  },
+  {
+    "id": "general_fruits",
+    "name": "General Dried Fruits",
+    "temperature_c": 60,
+    "moist_init": 0.80,
+    "moist_final": 0.15,
+    "estimated_minutes": 600
   }
 ]
