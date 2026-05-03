@@ -10,6 +10,12 @@ const completionModal = document.querySelector("#completionModal");
 const completionTitle = document.querySelector("#completionTitle");
 const completionText = document.querySelector("#completionText");
 const dismissModal = document.querySelector("#dismissModal");
+const startModal = document.querySelector("#startModal");
+const startModalForm = document.querySelector("#startModalForm");
+const defaultMoistureText = document.querySelector("#defaultMoistureText");
+const customFinalMoisture = document.querySelector("#customFinalMoisture");
+const cancelStartModal = document.querySelector("#cancelStartModal");
+const confirmStartDrying = document.querySelector("#confirmStartDrying");
 
 let fruits = [];
 let state = null;
@@ -108,6 +114,74 @@ function renderProfile() {
   `;
 }
 
+function defaultMoisturePercent(fruit) {
+  const moistFinal = Number(fruit?.moist_final);
+  if (Number.isFinite(moistFinal)) {
+    return moistFinal * 100;
+  }
+  return null;
+}
+
+function updateStartModalDetails() {
+  const fruit = selectedFruit();
+  const defaultPercent = defaultMoisturePercent(fruit);
+  defaultMoistureText.textContent = Number.isFinite(defaultPercent)
+    ? `Use default moisture (${defaultPercent.toFixed(1)}%)`
+    : "Use default moisture from profile";
+
+  if (Number.isFinite(defaultPercent)) {
+    customFinalMoisture.placeholder = defaultPercent.toFixed(1);
+  } else {
+    customFinalMoisture.placeholder = "";
+  }
+
+  const initialPercent = Number(fruit?.moist_init) * 100;
+  if (Number.isFinite(initialPercent)) {
+    customFinalMoisture.max = Math.max(0.1, initialPercent - 0.1).toFixed(1);
+  } else {
+    customFinalMoisture.max = "99.9";
+  }
+}
+
+function selectedMoistureMode() {
+  return startModalForm.querySelector("input[name='moistureMode']:checked")?.value || "default";
+}
+
+function syncCustomMoistureInput() {
+  const isCustom = selectedMoistureMode() === "custom";
+  customFinalMoisture.disabled = !isCustom;
+  customFinalMoisture.required = isCustom;
+  if (isCustom) {
+    customFinalMoisture.focus();
+  }
+}
+
+function openStartModal() {
+  updateStartModalDetails();
+  startModalForm.reset();
+  syncCustomMoistureInput();
+  startModal.classList.add("is-open");
+  startModal.setAttribute("aria-hidden", "false");
+  confirmStartDrying.focus();
+}
+
+function closeStartModal() {
+  startModal.classList.remove("is-open");
+  startModal.setAttribute("aria-hidden", "true");
+}
+
+async function startDrying(payload) {
+  confirmStartDrying.disabled = true;
+  try {
+    renderState(await postJson("/api/batch/start", payload));
+    closeStartModal();
+  } catch (error) {
+    setNotice(error.message);
+  } finally {
+    confirmStartDrying.disabled = false;
+  }
+}
+
 function setNotice(message, isVisible = true) {
   notice.hidden = !isVisible;
   notice.textContent = message;
@@ -178,6 +252,17 @@ function showThresholdNotification(currentWeight) {
   }
 }
 
+function shouldShowThresholdAlert(batch, currentWeight) {
+  return Boolean(
+    batch.started_at &&
+      batch.running &&
+      Number.isFinite(Number(batch.initial_weight_g)) &&
+      Number(batch.initial_weight_g) > TARGET_THRESHOLD_G &&
+      Number.isFinite(Number(currentWeight)) &&
+      Number(currentWeight) < TARGET_THRESHOLD_G
+  );
+}
+
 function renderState(nextState) {
   state = nextState;
   const latest = state.latest || {};
@@ -205,7 +290,7 @@ function renderState(nextState) {
   // Always show Live source Firebase for fooling purposes
   const sourceValue = document.querySelector("#sourceValue");
   sourceValue.style.display = "block";
-  sourceValue.textContent = "Live source: Firebase";
+  sourceValue.textContent = "Source: Firebase";
 
   document.querySelector("#weightValue").textContent = formatNumber(currentWeight, "g", state.use_manual_weight ? 1 : 2);
   document.querySelector("#targetValue").textContent = Number.isFinite(Number(batch.target_weight_g))
@@ -214,7 +299,9 @@ function renderState(nextState) {
   renderElapsedFields();
   syncManualElapsedTicker();
 
-  if (hasStartedBatch && batch.running && currentWeight < TARGET_THRESHOLD_G) {
+  const thresholdAlertActive = shouldShowThresholdAlert(batch, currentWeight);
+
+  if (thresholdAlertActive) {
     if (!thresholdAlertShown) {
       thresholdAlertShown = true;
       showThresholdNotification(currentWeight);
@@ -230,7 +317,7 @@ function renderState(nextState) {
       : "No batch running";
   document.querySelector("#initialWeight").textContent = `Initial: ${formatNumber(batch.initial_weight_g, "g", 2)}`;
 
-  if (hasStartedBatch && batch.running && currentWeight < TARGET_THRESHOLD_G) {
+  if (thresholdAlertActive) {
     setNotice("Current weight is below 59 g. Remove the tray from the dryer.");
   } else if (hasStartedBatch && batch.completed_at && !completionResetInProgress) {
     setNotice("Target weight reached. Remove the tray from the dryer.");
@@ -492,13 +579,34 @@ batchForm.addEventListener("submit", async (event) => {
     setNotice("Select a fruit before starting.");
     return;
   }
+  openStartModal();
+});
+
+startModalForm.addEventListener("change", syncCustomMoistureInput);
+
+startModalForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
   const payload = {
     fruit_id: fruitSelect.value,
   };
-  try {
-    renderState(await postJson("/api/batch/start", payload));
-  } catch (error) {
-    setNotice(error.message);
+
+  if (selectedMoistureMode() === "custom") {
+    const customPercent = Number(customFinalMoisture.value);
+    if (!Number.isFinite(customPercent) || customPercent <= 0 || customPercent >= 100) {
+      setNotice("Enter a custom final moisture between 0 and 100%.");
+      return;
+    }
+    payload.moist_final = customPercent / 100;
+  }
+
+  await startDrying(payload);
+});
+
+cancelStartModal.addEventListener("click", closeStartModal);
+
+startModal.addEventListener("click", (event) => {
+  if (event.target === startModal) {
+    closeStartModal();
   }
 });
 
@@ -523,6 +631,11 @@ completionModal.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && startModal.classList.contains("is-open")) {
+    closeStartModal();
+    return;
+  }
+
   if (event.key === "Escape" && completionModal.classList.contains("is-open")) {
     acknowledgeCompletion();
   }

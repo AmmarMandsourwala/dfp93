@@ -19,7 +19,7 @@ DATA_DIR = ROOT / "data"
 FRUITS_PATH = DATA_DIR / "fruits.json"
 FIREBASE_WEIGHT_URL = os.getenv(
     "FIREBASE_WEIGHT_URL",
-    "https://food-dryer-dab22-default-rtdb.asia-southeast1.firebasedatabase.app/foodDrier/live/weight.json",
+    "https://food-dryer-dab22-default-rtdb.asia-southeast1.firebasedatabase.app/foodDrier/live.json",
 ).rstrip("/")
 FIREBASE_BASE_URL = os.getenv(
     "FIREBASE_BASE_URL",
@@ -28,6 +28,7 @@ FIREBASE_BASE_URL = os.getenv(
 FIREBASE_SECRET = os.getenv("FIREBASE_SECRET", "MBU8l4t114ysjAytcWqhuNv6A4Iub7c86utPwXaW")
 FIREBASE_CONTROL_PATH = os.getenv("FIREBASE_CONTROL_PATH", "foodDrier").strip("/")
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "1.0"))
+TELEMETRY_SAMPLE_SECONDS = float(os.getenv("TELEMETRY_SAMPLE_SECONDS", "90"))
 
 
 @dataclass
@@ -66,9 +67,10 @@ class DryerState:
             return {
                 "batch": asdict(self.batch),
                 "latest": self.latest,
-                "history": self.history[-120:],
+                "history": self.history[-720:],
                 "selected_fruit_id": self.selected_fruit_id,
                 "firebase_weight_url": FIREBASE_WEIGHT_URL or None,
+                "telemetry_sample_seconds": TELEMETRY_SAMPLE_SECONDS,
                 "manual_weight_g": self.manual_weight_g,
                 "use_manual_weight": self.use_manual_weight,
                 "manual_elapsed_minutes": self.manual_elapsed_minutes,
@@ -143,9 +145,13 @@ def write_dryer_controls(is_ready: bool, target_weight_g: float | None = None) -
     patch_firebase(FIREBASE_CONTROL_PATH, payload)
 
 
-def calculate_target_weight(initial_weight: float, fruit: dict[str, Any]) -> float:
+def calculate_target_weight(
+    initial_weight: float,
+    fruit: dict[str, Any],
+    moist_final_override: float | None = None,
+) -> float:
     moist_init = fruit.get("moist_init")
-    moist_final = fruit.get("moist_final")
+    moist_final = moist_final_override if moist_final_override is not None else fruit.get("moist_final")
     if isinstance(moist_init, (int, float)) and isinstance(moist_final, (int, float)):
         if moist_init < 0 or moist_init >= 1 or moist_final < 0 or moist_final >= 1:
             raise ValueError("Fruit moisture values must be between 0 and 1")
@@ -163,10 +169,24 @@ def parse_firebase_weight(payload: Any) -> float:
     if isinstance(payload, (int, float)):
         return round(abs(float(payload)), 2)
     if isinstance(payload, dict):
-        value = payload.get("value")
+        value = payload.get("weight", payload.get("value"))
         if isinstance(value, (int, float, str)):
             return round(abs(float(value)), 2)
-    raise ValueError("Firebase payload must be a number or an object with a numeric 'value'")
+    raise ValueError("Firebase payload must be a number or an object with numeric 'weight' or 'value'")
+
+
+def parse_firebase_timestamp(payload: Any) -> float | None:
+    if not isinstance(payload, dict):
+        return None
+
+    value = payload.get("timestamp")
+    if not isinstance(value, (int, float, str)):
+        return None
+
+    numeric_value = float(value)
+    if numeric_value > 100000000000:
+        return numeric_value / 1000
+    return numeric_value
 
 
 def get_telemetry() -> dict[str, Any]:
@@ -184,9 +204,13 @@ def get_telemetry() -> dict[str, Any]:
 
 def firebase_telemetry() -> dict[str, Any]:
     payload = call_json(FIREBASE_WEIGHT_URL)
-    return {
+    telemetry = {
         "weight_g": parse_firebase_weight(payload),
     }
+    sampled_at = parse_firebase_timestamp(payload)
+    if sampled_at is not None:
+        telemetry["sampled_at"] = sampled_at
+    return telemetry
 
 
 def offline_telemetry(error: str) -> dict[str, Any]:
@@ -281,8 +305,8 @@ def record_telemetry(telemetry: dict[str, Any]) -> None:
             batch.stabilization_warning = False
 
         STATE.latest = telemetry
-        STATE.history.append(telemetry)
-        STATE.history = STATE.history[-600:]
+        STATE.history.append(dict(telemetry))
+        STATE.history = STATE.history[-720:]
 
     if should_clear_controls:
         try:
@@ -363,8 +387,15 @@ class AppHandler(SimpleHTTPRequestHandler):
             latest_weight = STATE.latest.get("weight_g")
         initial_weight = float(body.get("initial_weight_g") or latest_weight or 0)
         estimated_minutes = float(body.get("estimated_minutes") or fruit["estimated_minutes"])
+        moist_final_override = None
+        if body.get("moist_final") is not None:
+            try:
+                moist_final_override = float(body["moist_final"])
+            except (TypeError, ValueError):
+                json_response(self, {"error": "Custom final moisture must be a number"}, HTTPStatus.BAD_REQUEST)
+                return
         try:
-            target_weight = calculate_target_weight(initial_weight, fruit)
+            target_weight = calculate_target_weight(initial_weight, fruit, moist_final_override)
         except ValueError as exc:
             json_response(self, {"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -395,17 +426,24 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         with STATE.lock:
+            started_at = time.time()
             STATE.batch = BatchState(
                 running=True,
                 fruit_id=fruit["id"],
                 fruit_name=fruit["name"],
-                started_at=time.time(),
+                started_at=started_at,
                 initial_weight_g=round(initial_weight, 2),
                 target_weight_g=target_weight,
                 estimated_minutes=round(estimated_minutes, 1),
                 remaining_minutes=round(estimated_minutes, 1),
             )
             STATE.selected_fruit_id = fruit["id"]
+            initial_point = dict(STATE.latest) if isinstance(STATE.latest.get("weight_g"), (int, float)) else {}
+            if initial_point:
+                initial_point["timestamp"] = started_at
+                STATE.history = [initial_point]
+            else:
+                STATE.history = []
         json_response(self, STATE.snapshot())
 
     def update_selection(self) -> None:
@@ -435,7 +473,6 @@ class AppHandler(SimpleHTTPRequestHandler):
         except (OSError, urllib.error.URLError, TimeoutError) as exc:
             print(f"[FIREBASE] Failed to clear dryer controls during batch reset: {exc}")
 
-        record_telemetry(get_telemetry())
         json_response(self, STATE.snapshot())
 
     def update_manual_weight(self) -> None:

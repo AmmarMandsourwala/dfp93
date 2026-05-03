@@ -355,7 +355,8 @@ canvas {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.completion-modal {
+.completion-modal,
+.start-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -366,7 +367,8 @@ canvas {
   pointer-events: none;
 }
 
-.completion-modal.is-open {
+.completion-modal.is-open,
+.start-modal.is-open {
   display: grid;
   pointer-events: auto;
 }
@@ -393,6 +395,31 @@ canvas {
   position: relative;
   z-index: 1002;
   touch-action: manipulation;
+}
+
+.start-modal-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.radio-option {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 12px;
+}
+
+.radio-option input {
+  width: auto;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 @media (max-width: 760px) {
