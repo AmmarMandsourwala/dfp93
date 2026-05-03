@@ -28,7 +28,7 @@ FIREBASE_BASE_URL = os.getenv(
 FIREBASE_SECRET = os.getenv("FIREBASE_SECRET", "MBU8l4t114ysjAytcWqhuNv6A4Iub7c86utPwXaW")
 FIREBASE_CONTROL_PATH = os.getenv("FIREBASE_CONTROL_PATH", "foodDrier").strip("/")
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "1.0"))
-TELEMETRY_SAMPLE_SECONDS = float(os.getenv("TELEMETRY_SAMPLE_SECONDS", "90"))
+alTELEMETRY_SAMPLE_SECONDS = float(os.getenv("TELEMETRY_SAMPLE_SECONDS", "120"))
 
 
 @dataclass
@@ -55,6 +55,8 @@ class DryerState:
         self.batch = BatchState()
         self.latest: dict[str, Any] = {}
         self.history: list[dict[str, Any]] = []
+        self.sample_window_started_at: float | None = None
+        self.sample_window_weights: list[float] = []
         self.selected_fruit_id: str | None = None
         self.manual_weight_g: float | None = None
         self.use_manual_weight: bool = False
@@ -267,6 +269,37 @@ def record_telemetry(telemetry: dict[str, Any]) -> None:
         telemetry["drying_progress"] = round(progress, 4)
         batch.remaining_minutes = estimate_remaining_minutes(batch, current_weight if has_weight else None)
 
+        should_capture = batch.running and has_weight and float(current_weight) > 0
+        if should_capture:
+            if STATE.sample_window_started_at is None:
+                STATE.sample_window_started_at = now
+                STATE.sample_window_weights = []
+            STATE.sample_window_weights.append(float(current_weight))
+
+            window_elapsed = now - STATE.sample_window_started_at
+            if window_elapsed >= TELEMETRY_SAMPLE_SECONDS:
+                weights = STATE.sample_window_weights
+                if len(weights) >= 5:
+                    mean_weight = sum(weights) / len(weights)
+                    filtered_weights = [weight for weight in weights if abs(weight - mean_weight) < 50]
+                    average_source = filtered_weights or weights
+                    average_weight = sum(average_source) / len(average_source)
+                    elapsed_seconds = 0
+                    if batch.started_at is not None:
+                        elapsed_seconds = int(now - batch.started_at)
+                    STATE.history.append(
+                        {
+                            "t": max(0, elapsed_seconds),
+                            "weight_g": round(average_weight, 2),
+                            "timestamp": now,
+                            "sample_count": len(average_source),
+                            "sample_window_seconds": round(window_elapsed, 1),
+                        }
+                    )
+                    STATE.history = STATE.history[-720:]
+                STATE.sample_window_started_at = now
+                STATE.sample_window_weights = []
+
         completed = (
             batch.running
             and not batch.completed_at
@@ -305,8 +338,6 @@ def record_telemetry(telemetry: dict[str, Any]) -> None:
             batch.stabilization_warning = False
 
         STATE.latest = telemetry
-        STATE.history.append(dict(telemetry))
-        STATE.history = STATE.history[-720:]
 
     if should_clear_controls:
         try:
@@ -438,12 +469,18 @@ class AppHandler(SimpleHTTPRequestHandler):
                 remaining_minutes=round(estimated_minutes, 1),
             )
             STATE.selected_fruit_id = fruit["id"]
-            initial_point = dict(STATE.latest) if isinstance(STATE.latest.get("weight_g"), (int, float)) else {}
-            if initial_point:
-                initial_point["timestamp"] = started_at
-                STATE.history = [initial_point]
-            else:
-                STATE.history = []
+            STATE.history = [
+                {
+                    "t": 0,
+                    "weight_g": round(initial_weight, 2),
+                    "timestamp": started_at,
+                    "sample_count": 1,
+                    "sample_window_seconds": 0,
+                    "initial": True,
+                }
+            ]
+            STATE.sample_window_started_at = started_at
+            STATE.sample_window_weights = []
         json_response(self, STATE.snapshot())
 
     def update_selection(self) -> None:
@@ -467,6 +504,8 @@ class AppHandler(SimpleHTTPRequestHandler):
         with STATE.lock:
             STATE.batch = BatchState()
             STATE.history = []
+            STATE.sample_window_started_at = None
+            STATE.sample_window_weights = []
 
         try:
             write_dryer_controls(False)

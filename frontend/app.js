@@ -330,7 +330,7 @@ function renderState(nextState) {
     setNotice("", false);
   }
 
-  drawChart(state.history || [], batch.target_weight_g, currentWeight);
+  drawChart(state.history || [], batch.target_weight_g, currentWeight, hasStartedBatch);
 
   if (fruitSelect.value !== (state.selected_fruit_id || "")) {
     fruitSelect.value = state.selected_fruit_id || "";
@@ -402,7 +402,7 @@ function playAlarm() {
   });
 }
 
-function drawChart(history, targetWeight, currentWeight) {
+function drawChart(history, targetWeight, currentWeight, hasStartedBatch = false) {
   const width = chart.width;
   const height = chart.height;
   const padding = {
@@ -426,14 +426,37 @@ function drawChart(history, targetWeight, currentWeight) {
       ...item,
       weight_g: absoluteWeight(item.weight_g, 2),
     }));
-  const plotHistory = validHistory.length
-    ? validHistory
-    : [
-        {
-          weight_g: absoluteWeight(currentWeight, 2),
-          timestamp: Date.now() / 1000,
-        },
-      ];
+
+  if (!validHistory.length) {
+    const now = Date.now() / 1000;
+    const axisHistory = [
+      { timestamp: now - 120 },
+      { timestamp: now },
+    ];
+    const axisValues = [absoluteWeight(currentWeight, 2)];
+    if (Number.isFinite(Number(targetWeight))) axisValues.push(Number(targetWeight));
+    const rawMin = Math.min(...axisValues);
+    const rawMax = Math.max(...axisValues);
+    const span = Math.max(10, rawMax - rawMin);
+    const yMin = Math.max(0, Math.floor((rawMin - span * 0.12) / 10) * 10);
+    const yMax = Math.ceil((rawMax + span * 0.12) / 10) * 10;
+
+    drawAxes(axisHistory, yMin, yMax, width, height, padding);
+    drawTargetLine(targetWeight, plotLeft, plotRight, plotTop, plotBottom, yMin, yMax);
+
+    ctx.fillStyle = "#617073";
+    ctx.font = "15px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      hasStartedBatch ? "Averaging readings for the first 2-minute point" : "Start drying to begin plotting averaged readings",
+      (plotLeft + plotRight) / 2,
+      (plotTop + plotBottom) / 2
+    );
+    return;
+  }
+
+  const plotHistory = validHistory;
 
   const weightValues = plotHistory.map((item) => Number(item.weight_g));
   if (Number.isFinite(Number(targetWeight))) weightValues.push(Number(targetWeight));
@@ -444,25 +467,12 @@ function drawChart(history, targetWeight, currentWeight) {
   const yMax = Math.ceil((rawMax + span * 0.12) / 10) * 10;
 
   drawAxes(plotHistory, yMin, yMax, width, height, padding);
-  drawWeightSeries(plotHistory, "#24835c", yMin, yMax, plotLeft, plotRight, plotTop, plotBottom);
+  drawStepWeightSeries(plotHistory, "#24835c", yMin, yMax, plotLeft, plotRight, plotTop, plotBottom);
 
-  if (Number.isFinite(Number(targetWeight))) {
-    const targetY = scaleToPlot(Number(targetWeight), yMin, yMax, plotTop, plotBottom);
-    ctx.strokeStyle = "#b72d2d";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 8]);
-    ctx.beginPath();
-    ctx.moveTo(plotLeft, targetY);
-    ctx.lineTo(plotRight, targetY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = "#b72d2d";
-    ctx.font = "14px Arial";
-    ctx.fillText(`Target ${Number(targetWeight).toFixed(0)} g`, plotLeft + 8, targetY - 8);
-  }
+  drawTargetLine(targetWeight, plotLeft, plotRight, plotTop, plotBottom, yMin, yMax);
 
   const latest = plotHistory[plotHistory.length - 1];
-  const latestX = plotRight;
+  const latestX = xForPoint(latest, plotHistory, plotLeft, plotRight);
   const latestY = scaleToPlot(Number(latest.weight_g), yMin, yMax, plotTop, plotBottom);
   ctx.fillStyle = "#24835c";
   ctx.beginPath();
@@ -472,9 +482,59 @@ function drawChart(history, targetWeight, currentWeight) {
   ctx.fillText(`${Number(latest.weight_g).toFixed(1)} g`, Math.max(plotLeft, latestX - 86), latestY - 12);
 }
 
+function drawTargetLine(targetWeight, plotLeft, plotRight, plotTop, plotBottom, yMin, yMax) {
+  if (!Number.isFinite(Number(targetWeight))) return;
+
+  const targetY = scaleToPlot(Number(targetWeight), yMin, yMax, plotTop, plotBottom);
+  ctx.strokeStyle = "#b72d2d";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  ctx.moveTo(plotLeft, targetY);
+  ctx.lineTo(plotRight, targetY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#b72d2d";
+  ctx.font = "14px Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(`Target ${Number(targetWeight).toFixed(0)} g`, plotLeft + 8, targetY - 8);
+}
+
+function pointTimeValue(point, fallbackIndex) {
+  const relativeTime = Number(point.t);
+  if (Number.isFinite(relativeTime)) return relativeTime;
+  const timestamp = Number(point.timestamp);
+  if (Number.isFinite(timestamp)) return timestamp;
+  return fallbackIndex;
+}
+
+function xForPoint(point, history, left, right) {
+  if (history.length <= 1) return right;
+
+  const times = history.map(pointTimeValue);
+  const minTime = Math.min(...times);
+  const maxTime = Math.max(...times);
+  if (maxTime <= minTime) return right;
+
+  const value = pointTimeValue(point, history.indexOf(point));
+  return left + ((value - minTime) / (maxTime - minTime)) * (right - left);
+}
+
 function scaleToPlot(value, min, max, top, bottom) {
   if (max <= min) return (top + bottom) / 2;
   return bottom - ((value - min) / (max - min)) * (bottom - top);
+}
+
+function formatAxisTime(value, isRelative) {
+  if (!isRelative) return formatClock(value);
+
+  const seconds = Math.max(0, Math.round(Number(value)));
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  if (minutes === 0) return `${remainder}s`;
+  if (remainder === 0) return `${minutes}m`;
+  return `${minutes}m ${remainder}s`;
 }
 
 function drawAxes(history, yMin, yMax, width, height, padding) {
@@ -512,17 +572,19 @@ function drawAxes(history, yMin, yMax, width, height, padding) {
 
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
+  const usesRelativeTime = history.some((item) => Number.isFinite(Number(item.t)));
   for (let i = 0; i < xTicks; i += 1) {
     const index = Math.round((i / Math.max(xTicks - 1, 1)) * (history.length - 1));
     const item = history[index];
-    const x = plotLeft + (index / Math.max(history.length - 1, 1)) * (plotRight - plotLeft);
+    const x = history.length === 1 ? (i === 0 ? plotLeft : plotRight) : xForPoint(item, history, plotLeft, plotRight);
     ctx.strokeStyle = "#e8eeec";
     ctx.beginPath();
     ctx.moveTo(x, plotTop);
     ctx.lineTo(x, plotBottom);
     ctx.stroke();
     ctx.fillStyle = "#617073";
-    ctx.fillText(formatClock(item.timestamp), x, plotBottom + 12);
+    const axisValue = usesRelativeTime ? pointTimeValue(item, index) : Number(item.timestamp);
+    ctx.fillText(formatAxisTime(axisValue, usesRelativeTime), x, plotBottom + 12);
   }
 
   ctx.save();
@@ -537,16 +599,36 @@ function drawAxes(history, yMin, yMax, width, height, padding) {
   ctx.fillText("Time", (plotLeft + plotRight) / 2, height - 26);
 }
 
-function drawWeightSeries(history, color, yMin, yMax, left, right, top, bottom) {
+function drawStepWeightSeries(history, color, yMin, yMax, left, right, top, bottom) {
+  if (history.length === 1) {
+    const y = scaleToPlot(Number(history[0].weight_g), yMin, yMax, top, bottom);
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.moveTo(left, y);
+    ctx.lineTo(right, y);
+    ctx.stroke();
+    return;
+  }
+
   ctx.beginPath();
   ctx.strokeStyle = color;
   ctx.lineWidth = 3;
   history.forEach((point, index) => {
-    const x = left + (index / Math.max(history.length - 1, 1)) * (right - left);
+    const x = xForPoint(point, history, left, right);
     const y = scaleToPlot(Number(point.weight_g), yMin, yMax, top, bottom);
-    if (index === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    if (index === 0) {
+      ctx.moveTo(left, y);
+      ctx.lineTo(x, y);
+      return;
+    }
+
+    const previousPoint = history[index - 1];
+    const previousY = scaleToPlot(Number(previousPoint.weight_g), yMin, yMax, top, bottom);
+    ctx.lineTo(x, previousY);
+    ctx.lineTo(x, y);
   });
+  ctx.lineTo(right, scaleToPlot(Number(history[history.length - 1].weight_g), yMin, yMax, top, bottom));
   ctx.stroke();
 }
 
