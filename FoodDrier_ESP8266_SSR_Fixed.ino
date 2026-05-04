@@ -58,15 +58,27 @@ float threshold = 50.0;
 bool processActive = false;
 bool relayState = false;
 
+// ================= 2-MINUTE SAMPLING =================
+#define MAX_SAMPLES 120  // One sample per second for 2 minutes
+#define SAMPLING_INTERVAL 1000UL  // Sample once per second
+#define SAMPLING_DURATION 120000UL  // 2 minutes in milliseconds
+float weightSamples[MAX_SAMPLES];
+int sampleCount = 0;
+unsigned long samplingStartTime = 0;
+unsigned long lastSampleTime = 0;
+bool samplingActive = false;
+
 // ================= WEIGHT AVERAGING =================
-const unsigned long WEIGHT_AVERAGE_WINDOW = 120000;
+const unsigned long WEIGHT_AVERAGE_WINDOW = 120000UL; // 2 minutes
 const float MIN_VALID_WEIGHT = 5.0;
-unsigned long weightAverageStart = 0;
+unsigned long windowStartTime = 0;
 double weightSum = 0;
 unsigned int weightSampleCount = 0;
 float averagedWeight = 0;
 bool hasAveragedWeight = false;
 bool lastProcessActive = false;
+unsigned long lastStandbyUpdate = 0;
+const unsigned long STANDBY_UPDATE_INTERVAL = 1000UL;  // Update every 1 second in standby
 
 // ================= EEPROM =================
 #define EEPROM_SIZE 512
@@ -77,6 +89,30 @@ void setRelay(bool on) {
   digitalWrite(RELAY_PIN, on ? RELAY_ON_LEVEL : RELAY_OFF_LEVEL);
   relayState = on;
 }
+
+// ================= SAMPLING FUNCTIONS =================
+void addWeightSample(float weight) {
+  if (sampleCount < MAX_SAMPLES) {
+    weightSamples[sampleCount] = weight;
+    sampleCount++;
+  }
+}
+
+float getAverageWeight() {
+  if (sampleCount == 0) return 0;
+  float sum = 0;
+  for (int i = 0; i < sampleCount; i++) {
+    sum += weightSamples[i];
+  }
+  return sum / sampleCount;
+}
+
+void resetSampling() {
+  sampleCount = 0;
+  samplingStartTime = millis();
+}
+
+
 
 void saveCalibration(float value) {
   EEPROM.put(CAL_ADDR, value);
@@ -106,41 +142,66 @@ float loadThreshold() {
 bool updateWeightAverage(float weight) {
   unsigned long now = millis();
 
-  if (weightAverageStart == 0) {
-    weightAverageStart = now;
+  // Initialize window on first call
+  if (windowStartTime == 0) {
+    windowStartTime = now;
   }
 
-  if (weight >= MIN_VALID_WEIGHT) {
-    weightSum += weight;
-    weightSampleCount++;
+  // Sample only once per second
+  if (now - lastSampleTime >= SAMPLING_INTERVAL) {
+    lastSampleTime = now;
+
+    if (weight >= MIN_VALID_WEIGHT && weightSampleCount < MAX_SAMPLES) {
+      weightSum += weight;
+      weightSampleCount++;
+      Serial.print("Sample ");
+      Serial.print(weightSampleCount);
+      Serial.print(": ");
+      Serial.print(weight, 2);
+      Serial.println(" g");
+    }
   }
 
-  if (now - weightAverageStart < WEIGHT_AVERAGE_WINDOW) {
-    return false;
-  }
+  // Check if 2-minute window has elapsed
+  if (now - windowStartTime >= WEIGHT_AVERAGE_WINDOW) {
+    windowStartTime = now;  // Start a new window
 
-  weightAverageStart = now;
-  if (weightSampleCount == 0) {
+    if (weightSampleCount == 0) {
+      Serial.println("No valid samples in 2-minute window!");
+      return false;
+    }
+
+    // Calculate average
+    averagedWeight = weightSum / weightSampleCount;
+    hasAveragedWeight = true;
+
+    Serial.print("=== 2-MINUTE WINDOW COMPLETE ===");
+    Serial.print(" | Samples: ");
+    Serial.print(weightSampleCount);
+    Serial.print(" | Average: ");
+    Serial.print(averagedWeight, 2);
+    Serial.println(" g");
+
+    // Reset for next window
     weightSum = 0;
-    return false;
+    weightSampleCount = 0;
+    lastSampleTime = 0;  // Reset sample timer for next window
+
+    return true;
   }
 
-  averagedWeight = weightSum / weightSampleCount;
-  hasAveragedWeight = true;
-
-  weightSum = 0;
-  weightSampleCount = 0;
-
-  return true;
+  return false;
 }
 
 void resetWeightAverage() {
-  weightAverageStart = 0;
+  windowStartTime = 0;
   weightSum = 0;
   weightSampleCount = 0;
   averagedWeight = 0;
   hasAveragedWeight = false;
+  lastSampleTime = 0;
   lastFirebaseSend = 0;
+  Serial.println("Weight averaging reset!");
 }
 
 BLYNK_WRITE(V2) {
@@ -309,53 +370,91 @@ void loop() {
 
   readFirebaseControls();
 
+  // Reset averaging when transitioning between standby and active
   if (processActive != lastProcessActive) {
     resetWeightAverage();
     lastProcessActive = processActive;
-    Serial.println("Weight averaging reset for process state change");
+    Serial.print(">>> Process state changed to: ");
+    Serial.println(processActive ? "ACTIVE" : "STANDBY");
   }
 
-  float weight = abs(scale.get_units(5));
-  bool averageReady = updateWeightAverage(weight);
-  bool targetReachedByAverage = hasAveragedWeight && averagedWeight <= threshold;
+  unsigned long now = millis();
+  float currentWeight = abs(scale.get_units(5));  // Current weight reading
 
-  Serial.print("Raw Weight: ");
-  Serial.print(weight, 2);
-  Serial.print(" g | Samples: ");
-  Serial.println(weightSampleCount);
-
-  if (averageReady) {
-    Serial.print("2-minute Average Weight: ");
-    Serial.print(averagedWeight, 2);
-    Serial.println(" g");
-    Blynk.virtualWrite(V0, averagedWeight);
+  // ==========================================
+  // UPDATE 2-MINUTE AVERAGE (if in ACTIVE mode)
+  // ==========================================
+  if (processActive) {
+    bool windowComplete = updateWeightAverage(currentWeight);
   }
 
-  if (processActive && !targetReachedByAverage) {
-    setRelay(true);
-    Serial.println("Status: ACTIVE - SSR ON");
-    Blynk.virtualWrite(V1, 1);
-  } else {
-    setRelay(false);
-    Blynk.virtualWrite(V1, 0);
-
-    if (processActive && targetReachedByAverage) {
-      Serial.println("Status: TARGET REACHED - SSR OFF");
-      bool activeCleared = Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false);
-      Firebase.RTDB.setBool(&fbdo, "/foodDrier/ssr", false);
-      if (activeCleared) {
-        processActive = false;
-        Serial.println("Firebase updated: isActive set to false");
-      }
-    } else {
-      Serial.println("Status: STANDBY - SSR OFF");
+  // ==========================================
+  // STANDBY MODE: Update display every 1 second
+  // ==========================================
+  if (!processActive) {
+    if (now - lastStandbyUpdate >= STANDBY_UPDATE_INTERVAL) {
+      lastStandbyUpdate = now;
+      Serial.print("STANDBY | Current Weight: ");
+      Serial.print(currentWeight, 2);
+      Serial.println(" g");
+      Blynk.virtualWrite(V0, currentWeight);
     }
   }
 
-  if (processActive && averageReady) {
-    sendToFirebase(averagedWeight, relayState);
-  } else if (!processActive) {
-    sendToFirebase(weight, relayState);
+  // ==========================================
+  // RELAY CONTROL: Based on 2-minute average
+  // ==========================================
+  bool shouldTurnOff = false;
+
+  if (processActive && hasAveragedWeight) {
+    // Only compare 2-minute average to threshold
+    if (averagedWeight <= threshold) {
+      shouldTurnOff = true;
+      Serial.print(">>> 2-MIN AVERAGE (");
+      Serial.print(averagedWeight, 2);
+      Serial.print("g) <= THRESHOLD (");
+      Serial.print(threshold, 2);
+      Serial.println("g) - STOPPING");
+    } else {
+      Serial.print(">>> 2-MIN AVERAGE (");
+      Serial.print(averagedWeight, 2);
+      Serial.print("g) > THRESHOLD (");
+      Serial.print(threshold, 2);
+      Serial.println("g) - CONTINUING");
+    }
   }
-  delay(200);
+
+  // Apply relay control
+  if (processActive && !shouldTurnOff) {
+    // ACTIVE and target NOT reached: Keep heater ON
+    setRelay(true);
+    Blynk.virtualWrite(V1, 1);
+    Serial.println(">>> SSR: ON (Drying in progress)");
+
+    // Send average weight to Firebase every 2 minutes when available
+    if (hasAveragedWeight) {
+      sendToFirebase(averagedWeight, true);
+      hasAveragedWeight = false;  // Mark as processed
+    }
+  } else {
+    // STANDBY or target reached: Turn OFF
+    setRelay(false);
+    Blynk.virtualWrite(V1, 0);
+
+    if (processActive && shouldTurnOff) {
+      // Target reached - stop the process
+      Serial.println(">>> SSR: OFF (Target reached!)");
+      Firebase.RTDB.setBool(&fbdo, "/foodDrier/isActive", false);
+      Firebase.RTDB.setBool(&fbdo, "/foodDrier/ssr", false);
+      processActive = false;
+      resetWeightAverage();
+      sendToFirebase(averagedWeight, false);
+    } else if (!processActive) {
+      // Normal standby - always send weight to Firebase
+      Serial.println(">>> SSR: OFF (Standby)");
+      sendToFirebase(currentWeight, false);
+    }
+  }
+
+  delay(100);  // Reduced delay for faster responsiveness
 }

@@ -78,5 +78,45 @@
     "moist_init": 0.80,
     "moist_final": 0.15,
     "estimated_minutes": 600
+  },
+  {
+    "id": "granny smith apple",
+    "name": "granny smith apple",
+    "temperature_c": 50,
+    "moist_init": 0.874,
+    "moist_final": 0.107,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "boscop apple",
+    "name": "boscop apple",
+    "temperature_c": 50,
+    "moist_init": 0.824,
+    "moist_final": 0.107,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "modi apple",
+    "name": "modi apple",
+    "temperature_c": 50,
+    "moist_init": 0.847,
+    "moist_final": 0.107,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "ligol apple",
+    "name": "ligol apple",
+    "temperature_c": 50,
+    "moist_init": 0.859,
+    "moist_final": 0.107,
+    "estimated_minutes": 600
+  },
+  {
+    "id": "lobo apple",
+    "name": "lobo apple",
+    "temperature_c": 50,
+    "moist_init": 0.87,
+    "moist_final": 0.107,
+    "estimated_minutes": 600
   }
 ]

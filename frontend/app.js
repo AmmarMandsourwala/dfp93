@@ -77,6 +77,14 @@ function formatClock(timestamp) {
   });
 }
 
+function formatTemperature(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return "-- C";
+  }
+  return `${numericValue.toFixed(0)} C`;
+}
+
 function renderFruitOptions() {
   const options = fruits.map((fruit) => `<option value="${fruit.id}">${fruit.name}</option>`).join("");
   fruitSelect.innerHTML = `<option value="">No fruit selected</option>${options}`;
@@ -86,6 +94,15 @@ function renderFruitOptions() {
 
 function selectedFruit() {
   return fruits.find((item) => item.id === fruitSelect.value);
+}
+
+function fruitById(fruitId) {
+  return fruits.find((item) => item.id === fruitId);
+}
+
+function activeTemperatureFruit() {
+  const batchFruit = fruitById(state?.batch?.fruit_id);
+  return batchFruit || selectedFruit();
 }
 
 function targetProfileText(fruit) {
@@ -112,6 +129,7 @@ function renderProfile() {
   startDryingButton.disabled = Boolean(state?.batch?.running);
   profileDetails.innerHTML = `
     <span>Final Moisture: ${targetProfileText(fruit)}</span>
+    <span>Temperature: ${formatTemperature(fruit.temperature_c)}</span>
     <span>Current profile: ${fruit.name}</span>
   `;
 }
@@ -322,6 +340,7 @@ function renderState(nextState) {
   document.querySelector("#targetValue").textContent = Number.isFinite(Number(batch.target_weight_g))
     ? formatNumber(batch.target_weight_g, "g", 2)
     : "-- g";
+  document.querySelector("#temperatureValue").textContent = formatTemperature(activeTemperatureFruit()?.temperature_c);
   renderElapsedFields();
   syncManualElapsedTicker();
 
@@ -684,13 +703,21 @@ async function init() {
   renderFruitOptions();
   renderState(await fetch("/api/state").then((response) => response.json()));
 
+  // Poll state every 1 second
   window.setInterval(async () => {
     try {
       renderState(await fetch("/api/state").then((response) => response.json()));
     } catch (error) {
       connectionStatus.textContent = "Firebase connection lost";
     }
-  }, 2000);
+  }, 1000);
+
+  // Update elapsed time independently every 1 second for smooth display
+  window.setInterval(() => {
+    if (state?.batch?.running || state?.use_manual_elapsed_time) {
+      renderElapsedFields();
+    }
+  }, 1000);
 }
 
 fruitSelect.addEventListener("change", renderProfile);
